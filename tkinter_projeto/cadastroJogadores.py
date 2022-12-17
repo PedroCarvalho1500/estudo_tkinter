@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import ttk
 
 
 
@@ -15,6 +16,8 @@ class Application():
         self.tela()
         self.frames_da_tela()
         self.widgets_frame1()
+        self.lista_dentro_do_frame2()
+        
         janela.wait_window()
         
     def tela(self):
@@ -78,30 +81,50 @@ class Application():
         
 
         ## Criação da label e entrada do código
-        self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador")
-        self.lb_nomejogador.place(relx=0.08, rely=0.35, relwidth=0.22, relheight=0.11)
+        self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
+        self.lb_nomejogador.place(relx=0.08, rely=0.39, relwidth=0.22, relheight=0.11)
 
         ##ENTRY = INPUT DO TKINTER
-        self.nome_jogador_entry = Entry(self.frame_1)
+        self.nome_jogador_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.nome_jogador_entry.place(relx=0.08, rely=0.47, relwidth=0.22, relheight=0.09)
         
-        self.lb_posição = Label(self.frame_1, text = "Posição")
-        self.lb_posição.place(relx=0.37, rely=0.35, relwidth=0.14, relheight=0.11)
+        self.lb_posição = Label(self.frame_1, text = "Posição", bg='#c0c0c0', fg='#483D8B')
+        self.lb_posição.place(relx=0.37, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.posicao_entry = Entry(self.frame_1)
+        self.posicao_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.posicao_entry.place(relx=0.37, rely=0.47, relwidth=0.14, relheight=0.09)
         
-        self.lb_time = Label(self.frame_1, text = "Time")
-        self.lb_time.place(relx=0.57, rely=0.35, relwidth=0.14, relheight=0.11)
+        self.lb_time = Label(self.frame_1, text = "Time", bg='#c0c0c0', fg='#483D8B')
+        self.lb_time.place(relx=0.57, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.time_entry = Entry(self.frame_1)
+        self.time_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.time_entry.place(relx=0.57, rely=0.47, relwidth=0.14, relheight=0.09)
         
-        self.lb_valor = Label(self.frame_1, text = "Valor (em Euros)")
-        self.lb_valor.place(relx=0.77, rely=0.35, relwidth=0.14, relheight=0.11)
+        self.lb_valor = Label(self.frame_1, text = "Valor (Euros)", bg='#c0c0c0', fg='#483D8B')
+        self.lb_valor.place(relx=0.77, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.valor_entry = Entry(self.frame_1)
+        self.valor_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.valor_entry.place(relx=0.77, rely=0.47, relwidth=0.14, relheight=0.09)
+
+
+    def lista_dentro_do_frame2(self):
+        self.listaCli = ttk.Treeview(self.frame_2, height=3, column=("col1", "col2", "col3", "col4"))
+        self.listaCli.heading("#0", text="")
+        self.listaCli.heading("#1", text="Nome")
+        self.listaCli.heading("#2", text="Posição")
+        self.listaCli.heading("#3", text="Time")
+        self.listaCli.heading("#4", text="Valor(Euros)")
+        self.listaCli.column("#0", width=1)
+        self.listaCli.column("#1", width=70)
+        self.listaCli.column("#2", width=50)
+        self.listaCli.column("#3", width=30)
+        self.listaCli.column("#3", width=20)
+        
+        self.listaCli.place(relx=0.01, rely=0.01, relwidth=0.95, relheight=0.90)
+        
+        self.scroolLista = Scrollbar(self.frame_2, orient='vertical')
+        self.listaCli.configure(yscroll=self.scroolLista.set)
+        self.scroolLista.place(relx=0.96, rely=0.01, relwidth=0.04, relheight=0.85)
 
 
 
