@@ -1,22 +1,55 @@
 from tkinter import *
 from tkinter import ttk
-
+import sqlite3
 
 
 #VARIÁVEL PARA A JANELA
 janela = Tk()
 
-class Application():
+
+class FuncoesTela():
+    def limpa_tela(self):
+        self.nome_jogador_entry.delete(0, END)
+        self.posicao_entry.delete(0, END)
+        self.time_entry.delete(0, END)
+        self.valor_entry.delete(0, END)
+
+    def conecta_bd(self):
+        self.conn = sqlite3.connect("jogadores.bd")
+        self.cursor = self.conn.cursor()
+        
+    def desconecta_bd(self):
+        self.conn.close()
+
+    def montaTabelas(self):
+        self.conecta_bd()
+        print("Conectando ao Banco de Dados!")
+        
+        #CRIAR TABELA
+        self.cursor.execute(""" CREATE TABLE IF NOT EXISTS jogadores (
+                        codigo INTEGER PRIMARY KEY,
+                        nome_jogador CHAR(40) NOT NULL,
+                        posicaojogador CHAR(40) NOT NULL,
+                        time_jogador CHAR(40),
+                        valor_jogador  INT(20)  NOT NULL
+                            )""")
+        
+        self.conn.commit()
+        print("BANCO DE DADOS CRIADO!!!")
+        self.desconecta_bd()
+
+
+class Application(FuncoesTela):
     def __init__(self):
         
         #INSTANCIANDO A JANELA NOVAMENTE DENTRO DA CLASSE, ASSOCIANDO AO ATRIBUTO.
         self.janela = janela
-        
         #CHAMANDO A FUNÇÃO DE CONFIGURAÇÃO DA TELA.
         self.tela()
         self.frames_da_tela()
         self.widgets_frame1()
         self.lista_dentro_do_frame2()
+        self.montaTabelas()
         
         janela.wait_window()
         
@@ -59,31 +92,20 @@ class Application():
         # O PLACE PERMITE INSERIR OS ELEMENTOS NOS LOCAIS ESPECÍFICOS.
 
     def widgets_frame1(self):
-        ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_limpar.place(relx=0.18, rely=0.08, relwidth=0.1, relheight=0.15)
         
-        ## CRIAÇÃO BUTTON BUSCAR
-        self.bt_limpar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_limpar.place(relx=0.31, rely=0.08, relwidth=0.1, relheight=0.15)
         
-        ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_limpar.place(relx=0.44, rely=0.08, relwidth=0.1, relheight=0.15)
-        
-        ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_limpar.place(relx=0.57, rely=0.08, relwidth=0.1, relheight=0.15)
-        
-        ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_limpar.place(relx=0.72, rely=0.08, relwidth=0.1, relheight=0.15)
-        
-
         ## Criação da label e entrada do código
+        self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
+        self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
+        
+        self.codigo_entry = Entry(self.frame_1, fg='#2F4F4F')
+        self.codigo_entry.place(relx=0.09, rely=0.62, relwidth=0.09, relheight=0.09)
+        
+        
+        
         self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
         self.lb_nomejogador.place(relx=0.08, rely=0.39, relwidth=0.22, relheight=0.11)
-
+        
         ##ENTRY = INPUT DO TKINTER
         self.nome_jogador_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.nome_jogador_entry.place(relx=0.08, rely=0.47, relwidth=0.22, relheight=0.09)
@@ -105,6 +127,32 @@ class Application():
 
         self.valor_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.valor_entry.place(relx=0.77, rely=0.47, relwidth=0.14, relheight=0.09)
+        
+        
+        ## CRIAÇÃO BUTTON LIMPAR
+        self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.limpa_tela)
+        self.bt_limpar.place(relx=0.18, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        ## CRIAÇÃO BUTTON BUSCAR
+        self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_buscar.place(relx=0.31, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        ## CRIAÇÃO BUTTON LIMPAR
+        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_cadastrar.place(relx=0.44, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        ## CRIAÇÃO BUTTON LIMPAR
+        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_alterar.place(relx=0.57, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        ## CRIAÇÃO BUTTON LIMPAR
+        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_apagar.place(relx=0.72, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+
+
+
+
 
 
     def lista_dentro_do_frame2(self):
