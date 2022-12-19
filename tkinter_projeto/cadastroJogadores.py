@@ -8,6 +8,13 @@ janela = Tk()
 
 
 class FuncoesTela():
+    def variaveis_tela_entries(self):
+        self.nome_jogador = self.nome_jogador_entry.get()
+        self.posicao_jogador = self.posicao_entry.get()
+        self.time = self.time_entry.get()
+        self.valor = self.valor_entry.get()
+
+    
     def limpa_tela(self):
         self.nome_jogador_entry.delete(0, END)
         self.posicao_entry.delete(0, END)
@@ -27,15 +34,65 @@ class FuncoesTela():
         
         #CRIAR TABELA
         self.cursor.execute(""" CREATE TABLE IF NOT EXISTS jogadores (
-                        codigo INTEGER PRIMARY KEY,
-                        nome_jogador CHAR(40) NOT NULL,
+                        codigo INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                        nomeJogador CHAR(40) NOT NULL,
                         posicaojogador CHAR(40) NOT NULL,
-                        time_jogador CHAR(40),
-                        valor_jogador  INT(20)  NOT NULL
+                        timeJogador CHAR(40),
+                        valorJogador  INT(20)  NOT NULL
                             )""")
         
         self.conn.commit()
         print("BANCO DE DADOS CRIADO!!!")
+        self.desconecta_bd()
+
+    def add_cliente(self):
+        self.variaveis_tela_entries()
+        
+        self.conecta_bd()
+        
+        self.cursor.execute(""" INSERT INTO jogadores (nomeJogador, posicaojogador, timeJogador, valorJogador) 
+                            VALUES(?,?,?,?)
+                            """, (self.nome_jogador, self.posicao_jogador, self.time, self.valor))
+        
+        self.conn.commit()
+        self.desconecta_bd()
+        self.select_lista()
+        self.limpa_tela()
+        
+    def select_lista(self):
+        self.listaCli.delete(*self.listaCli.get_children())
+        self.conecta_bd()
+        lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
+                                    ORDER BY nomeJogador ASC; """)
+        
+        for i in lista:
+            self.listaCli.insert("", END, values=i)
+            
+        self.desconecta_bd()
+
+    def OnDoubleClick(self, event):
+        self.limpa_tela()
+        self.listaCli.selection()
+        
+        for n in self.listaCli.selection():
+            col1, col2, col3, col4, col5 = self.listaCli.item(n, 'values')
+            self.codigo_do_jogador = col1
+            
+            self.nome_jogador_entry.insert(END, col2)
+            self.posicao_entry.insert(END, col3)
+            self.time_entry.insert(END,col4)
+            self.valor_entry.insert(END, col5)
+            
+    def deleta_cliente(self):
+        self.variaveis_tela_entries()
+        self.conecta_bd()
+        
+        self.cursor.execute("""DELETE FROM jogadores WHERE codigo = ? """, (self.codigo_do_jogador))
+        self.conn.commit()
+        
+        self.desconecta_bd()
+        self.limpa_tela()
+        self.select_lista()
         self.desconecta_bd()
 
 
@@ -50,6 +107,7 @@ class Application(FuncoesTela):
         self.widgets_frame1()
         self.lista_dentro_do_frame2()
         self.montaTabelas()
+        self.select_lista()
         
         janela.wait_window()
         
@@ -95,11 +153,11 @@ class Application(FuncoesTela):
         
         
         ## Criação da label e entrada do código
-        self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
-        self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
+        #self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
+        #self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
         
-        self.codigo_entry = Entry(self.frame_1, fg='#2F4F4F')
-        self.codigo_entry.place(relx=0.09, rely=0.62, relwidth=0.09, relheight=0.09)
+        #self.codigo_entry = Entry(self.frame_1, fg='#2F4F4F')
+        #self.codigo_entry.place(relx=0.09, rely=0.62, relwidth=0.09, relheight=0.09)
         
         
         
@@ -138,7 +196,7 @@ class Application(FuncoesTela):
         self.bt_buscar.place(relx=0.31, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.add_cliente)
         self.bt_cadastrar.place(relx=0.44, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
@@ -146,7 +204,7 @@ class Application(FuncoesTela):
         self.bt_alterar.place(relx=0.57, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.deleta_cliente)
         self.bt_apagar.place(relx=0.72, rely=0.08, relwidth=0.1, relheight=0.15)
         
 
@@ -156,23 +214,31 @@ class Application(FuncoesTela):
 
 
     def lista_dentro_do_frame2(self):
-        self.listaCli = ttk.Treeview(self.frame_2, height=3, column=("col1", "col2", "col3", "col4"))
+        self.listaCli = ttk.Treeview(self.frame_2, height=3, column=("col1", "col2", "col3", "col4", "col5"))
+        
         self.listaCli.heading("#0", text="")
-        self.listaCli.heading("#1", text="Nome")
-        self.listaCli.heading("#2", text="Posição")
-        self.listaCli.heading("#3", text="Time")
-        self.listaCli.heading("#4", text="Valor(Euros)")
+        self.listaCli.heading("#1", text="Código")
+        self.listaCli.heading("#2", text="Nome")
+        self.listaCli.heading("#3", text="Posição")
+        self.listaCli.heading("#4", text="Time")
+        self.listaCli.heading("#5", text="Valor(Euros)")
+        
         self.listaCli.column("#0", width=1)
-        self.listaCli.column("#1", width=70)
-        self.listaCli.column("#2", width=50)
+        self.listaCli.column("#1", width=5)
+        self.listaCli.column("#2", width=80)
         self.listaCli.column("#3", width=30)
-        self.listaCli.column("#3", width=20)
+        self.listaCli.column("#4", width=50)
+        self.listaCli.column("#5", width=30)
         
         self.listaCli.place(relx=0.01, rely=0.01, relwidth=0.95, relheight=0.90)
         
         self.scroolLista = Scrollbar(self.frame_2, orient='vertical')
         self.listaCli.configure(yscroll=self.scroolLista.set)
         self.scroolLista.place(relx=0.96, rely=0.01, relwidth=0.04, relheight=0.85)
+        
+        
+        # BIND SIGNIFICA TODA VEZ QUE FICAR UMA INTERAÇÃO COM A LISTA
+        self.listaCli.bind("<Double-1>", self.OnDoubleClick)
 
 
 
