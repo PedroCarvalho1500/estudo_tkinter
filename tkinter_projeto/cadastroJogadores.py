@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from PIL import Image, ImageTk
 import sqlite3
 
 
@@ -63,7 +64,7 @@ class FuncoesTela():
         self.listaCli.delete(*self.listaCli.get_children())
         self.conecta_bd()
         lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
-                                    ORDER BY nomeJogador ASC; """)
+                                    ORDER BY codigo ASC; """)
         
         for i in lista:
             self.listaCli.insert("", END, values=i)
@@ -87,13 +88,26 @@ class FuncoesTela():
         self.variaveis_tela_entries()
         self.conecta_bd()
         
-        self.cursor.execute("""DELETE FROM jogadores WHERE codigo = ? """, (self.codigo_do_jogador))
+        self.cursor.execute(""" DELETE FROM jogadores WHERE codigo = ? """, [self.codigo_do_jogador])
         self.conn.commit()
         
         self.desconecta_bd()
         self.limpa_tela()
         self.select_lista()
         self.desconecta_bd()
+
+    def altera_cliente(self):
+        self.variaveis_tela_entries()
+        
+        self.conecta_bd()
+        
+        self.cursor.execute(""" UPDATE jogadores SET nomeJogador = ?, posicaojogador = ?, timeJogador = ?, valorJogador = ?
+                            WHERE codigo = ? """, (self.nome_jogador, self.posicao_jogador, self.time, self.valor, self.codigo_do_jogador))
+        
+        self.conn.commit()
+        self.desconecta_bd()
+        self.select_lista()
+        self.limpa_tela()
 
 
 class Application(FuncoesTela):
@@ -139,12 +153,18 @@ class Application(FuncoesTela):
         self.janela.minsize(width=900, height=900)
 
     def frames_da_tela(self):
+        image = Image.open("soccer.png")
+        render = ImageTk.PhotoImage(image)
+        
         self.frame_1 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7ad', highlightthickness=3)
         self.frame_1.place(relx= 0.04, rely=0.041, relwidth= 0.91, relheight=0.46)
         
         self.frame_2 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7ad', highlightthickness=3)
         self.frame_2.place(relx= 0.04, rely=0.52, relwidth= 0.91, relheight=0.46)
         
+        img = Label(self.frame_1, image=render, bg='#c0c0c0')
+        img.image = render
+        img.place(x=-170, y=-30)
         # PLACE PACK GRID 
         # O PACK NÃO DEIXA-NOS COLOCAR OBJETOS EM POSIÇÕES ESPECÍFICAS
         # O PLACE PERMITE INSERIR OS ELEMENTOS NOS LOCAIS ESPECÍFICOS.
@@ -162,50 +182,50 @@ class Application(FuncoesTela):
         
         
         self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
-        self.lb_nomejogador.place(relx=0.08, rely=0.39, relwidth=0.22, relheight=0.11)
+        self.lb_nomejogador.place(relx=0.21, rely=0.39, relwidth=0.22, relheight=0.11)
         
         ##ENTRY = INPUT DO TKINTER
         self.nome_jogador_entry = Entry(self.frame_1, fg='#2F4F4F')
-        self.nome_jogador_entry.place(relx=0.08, rely=0.47, relwidth=0.22, relheight=0.09)
+        self.nome_jogador_entry.place(relx=0.21, rely=0.47, relwidth=0.22, relheight=0.09)
         
         self.lb_posição = Label(self.frame_1, text = "Posição", bg='#c0c0c0', fg='#483D8B')
-        self.lb_posição.place(relx=0.37, rely=0.39, relwidth=0.14, relheight=0.11)
+        self.lb_posição.place(relx=0.47, rely=0.39, relwidth=0.14, relheight=0.11)
 
         self.posicao_entry = Entry(self.frame_1, fg='#2F4F4F')
-        self.posicao_entry.place(relx=0.37, rely=0.47, relwidth=0.14, relheight=0.09)
+        self.posicao_entry.place(relx=0.47, rely=0.47, relwidth=0.14, relheight=0.09)
         
         self.lb_time = Label(self.frame_1, text = "Time", bg='#c0c0c0', fg='#483D8B')
-        self.lb_time.place(relx=0.57, rely=0.39, relwidth=0.14, relheight=0.11)
+        self.lb_time.place(relx=0.66, rely=0.39, relwidth=0.14, relheight=0.11)
 
         self.time_entry = Entry(self.frame_1, fg='#2F4F4F')
-        self.time_entry.place(relx=0.57, rely=0.47, relwidth=0.14, relheight=0.09)
+        self.time_entry.place(relx=0.66, rely=0.47, relwidth=0.14, relheight=0.09)
         
         self.lb_valor = Label(self.frame_1, text = "Valor (Euros)", bg='#c0c0c0', fg='#483D8B')
-        self.lb_valor.place(relx=0.77, rely=0.39, relwidth=0.14, relheight=0.11)
+        self.lb_valor.place(relx=0.85, rely=0.39, relwidth=0.14, relheight=0.11)
 
         self.valor_entry = Entry(self.frame_1, fg='#2F4F4F')
-        self.valor_entry.place(relx=0.77, rely=0.47, relwidth=0.14, relheight=0.09)
+        self.valor_entry.place(relx=0.85, rely=0.47, relwidth=0.14, relheight=0.09)
         
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.limpa_tela)
-        self.bt_limpar.place(relx=0.18, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_limpar.place(relx=0.24, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON BUSCAR
         self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_buscar.place(relx=0.31, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_buscar.place(relx=0.36, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.add_cliente)
-        self.bt_cadastrar.place(relx=0.44, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_cadastrar.place(relx=0.50, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
-        self.bt_alterar.place(relx=0.57, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.altera_cliente)
+        self.bt_alterar.place(relx=0.63, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.deleta_cliente)
-        self.bt_apagar.place(relx=0.72, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_apagar.place(relx=0.78, rely=0.08, relwidth=0.1, relheight=0.15)
         
 
 
