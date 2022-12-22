@@ -1,12 +1,39 @@
 from tkinter import *
 from tkinter import ttk
 from PIL import Image, ImageTk
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate
+import webbrowser
 import sqlite3
+
 
 
 #VARIÁVEL PARA A JANELA
 janela = Tk()
 
+class Relatorios():
+    def printJogador(self):
+        webbrowser.open("jogador.pdf")
+        
+    def geraRelatorioJogador(self):
+        self.j = canvas.Canvas("jogador.pdf")
+        
+        self.codigoRel =  self.codigo_do_jogador
+        self.nome_jogadorRel = self.nome_jogador_entry.get()
+        self.posicao_jogadorRel = self.posicao_entry.get()
+        self.timeRel = self.time_entry.get()
+        self.valorRel = self.valor_entry.get()
+        
+        self.j.setFont("Helvetica-Bold", 22)
+        self.j.drawString(200, 790, "Ficha do Jogador")
+        
+        self.j.showPage()
+        self.j.save()
+        self.printJogador()
+        
 
 class FuncoesTela():
     def variaveis_tela_entries(self):
@@ -110,7 +137,7 @@ class FuncoesTela():
         self.limpa_tela()
 
 
-class Application(FuncoesTela):
+class Application(FuncoesTela, Relatorios):
     def __init__(self):
         
         #INSTANCIANDO A JANELA NOVAMENTE DENTRO DA CLASSE, ASSOCIANDO AO ATRIBUTO.
@@ -122,6 +149,7 @@ class Application(FuncoesTela):
         self.lista_dentro_do_frame2()
         self.montaTabelas()
         self.select_lista()
+        self.Menus()
         
         janela.wait_window()
         
@@ -156,7 +184,7 @@ class Application(FuncoesTela):
         image = Image.open("soccer.png")
         render = ImageTk.PhotoImage(image)
         
-        self.frame_1 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7ad', highlightthickness=3)
+        self.frame_1 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7af')
         self.frame_1.place(relx= 0.04, rely=0.041, relwidth= 0.91, relheight=0.46)
         
         self.frame_2 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7ad', highlightthickness=3)
@@ -164,7 +192,7 @@ class Application(FuncoesTela):
         
         img = Label(self.frame_1, image=render, bg='#c0c0c0')
         img.image = render
-        img.place(x=-170, y=-30)
+        img.place(x=-160, y=-10)
         # PLACE PACK GRID 
         # O PACK NÃO DEIXA-NOS COLOCAR OBJETOS EM POSIÇÕES ESPECÍFICAS
         # O PLACE PERMITE INSERIR OS ELEMENTOS NOS LOCAIS ESPECÍFICOS.
@@ -229,10 +257,6 @@ class Application(FuncoesTela):
         
 
 
-
-
-
-
     def lista_dentro_do_frame2(self):
         self.listaCli = ttk.Treeview(self.frame_2, height=3, column=("col1", "col2", "col3", "col4", "col5"))
         
@@ -260,7 +284,33 @@ class Application(FuncoesTela):
         # BIND SIGNIFICA TODA VEZ QUE FICAR UMA INTERAÇÃO COM A LISTA
         self.listaCli.bind("<Double-1>", self.OnDoubleClick)
 
+    def Menus(self):
+        
+        #INSTANCIANDO O MENU BAR
+        menubar = Menu(self.janela, tearoff=0)
+        
+        #CONFIGURANDO A PARTE DE CIMA, O MENUBAR
+        self.janela.config(menu=menubar)
+        
+        #UMA VARIÁVEL PARA CADA MENUBAR, OU SEJA, CADA COLUNA DENTRO D
+        filemenu = Menu(menubar, tearoff=0, bg="#FFDEAD", activeborderwidth=2, activeforeground="#F8F8FF", activebackground="#000000", font=('verdana', 10, 'bold'))
+        filemenu2 = Menu(menubar, tearoff=0, bg="#FFDEAD", activeborderwidth=2, activeforeground="#F8F8FF", activebackground="#000000", font=('verdana', 10, 'bold'))
+        filemenu3 = Menu(menubar, tearoff=0, bg="#FFDEAD", activeborderwidth=2, activeforeground="#F8F8FF", activebackground="#000000", font=('verdana', 10, 'bold'))
 
+        def quit(): self.janela.destroy()
+        
+        
+        menubar.add_cascade(label="Opções", menu=filemenu, background="#FFDEAD", font=('verdana', 10, 'bold') )
+        menubar.add_cascade(label= "Sobre", menu= filemenu2, background="#FFDEAD", font=('verdana', 10, 'bold'))
+        menubar.add_cascade(label= "Relatórios", menu= filemenu3, background="#FFDEAD", font=('verdana', 10, 'bold'))
+        
+        
+        filemenu.add_command(label="Sair", command= quit,font=('verdana', 10, 'bold'))
+        filemenu.add_command(label="Página de Clubes", command=lambda: print("CLICOU EM PÁGINA DE CLUBES"), font=('verdana', 10, 'bold'))
+        
+        filemenu2.add_command(label="Versão do Sistema", command=lambda: print("VERSÃO v0.1.0"))
+        
+        filemenu3.add_command(label="Ficha do Jogador", command=self.geraRelatorioJogador)
 
 Application()
 #LOOPING PARA A JANELA APARECER
