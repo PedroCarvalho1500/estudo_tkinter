@@ -8,6 +8,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate
 import webbrowser
 import sqlite3
+from tkinter import filedialog 
+from tkinter.filedialog import askopenfile
 
 
 
@@ -30,6 +32,21 @@ class Relatorios():
         self.j.setFont("Helvetica-Bold", 22)
         self.j.drawString(200, 790, "Ficha do Jogador")
         
+        self.j.drawString(50, 700, 'Código: ')
+        self.j.drawString(50, 620, 'Nome do Jogador: ')
+        self.j.drawString(50, 600, 'Posição do Jogador: ')
+        self.j.drawString(50, 580, 'Time do Jogador: ')
+        self.j.drawString(50, 560, 'Valor do Jogador:')
+        
+        self.j.setFont("Helvetica", 18)
+        self.j.drawString(150, 700, self.codigoRel)
+        self.j.drawString(280, 620, self.nome_jogadorRel)
+        self.j.drawString(280, 600, self.posicao_jogadorRel)
+        self.j.drawString(280, 580, self.timeRel)
+        self.j.drawString(280, 560, self.valorRel)
+        
+        
+        #self.j.rect(60,300,500,1300, fill=False, stroke=True)
         self.j.showPage()
         self.j.save()
         self.printJogador()
@@ -97,6 +114,13 @@ class FuncoesTela():
             self.listaCli.insert("", END, values=i)
             
         self.desconecta_bd()
+
+
+    def UploadAction(event=None):
+        filename = filedialog.askopenfilename()
+        print('Selected:', filename)
+
+
 
     def OnDoubleClick(self, event):
         self.limpa_tela()
@@ -208,13 +232,23 @@ class Application(FuncoesTela, Relatorios):
         #self.codigo_entry.place(relx=0.09, rely=0.62, relwidth=0.09, relheight=0.09)
         
         
-        
         self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
         self.lb_nomejogador.place(relx=0.21, rely=0.39, relwidth=0.22, relheight=0.11)
         
         ##ENTRY = INPUT DO TKINTER
         self.nome_jogador_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.nome_jogador_entry.place(relx=0.21, rely=0.47, relwidth=0.22, relheight=0.09)
+        
+        
+        #button_upload_photo = Button(self.frame_1, text='Carregar Foto', command=self.UploadAction, bg='#c0c0c0')
+        #button_upload_photo.place(relx=0.47, rely=0.60, relwidth=0.14, relheight=0.11)
+        
+        #image = Image.open()
+        #render = ImageTk.PhotoImage(image)
+        
+        #img = Label(self.frame_1, image=render, bg='#c0c0c0')
+        #img.image = render
+        #img.place(x=-160, y=-10)
         
         self.lb_posição = Label(self.frame_1, text = "Posição", bg='#c0c0c0', fg='#483D8B')
         self.lb_posição.place(relx=0.47, rely=0.39, relwidth=0.14, relheight=0.11)
