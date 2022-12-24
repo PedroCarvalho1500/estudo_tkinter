@@ -10,6 +10,8 @@ import webbrowser
 import sqlite3
 from tkinter import filedialog 
 from tkinter.filedialog import askopenfile
+import base64
+
 
 
 
@@ -121,13 +123,26 @@ class FuncoesTela():
         self.conecta_bd()
         self.listaCli.delete(*self.listaCli.get_children())
         
-        self.nome_jogador_entry.insert(0, '%')
-        self.nome_jogador_entry.insert(END, '%')
+        #self.nome_jogador_entry.insert(0, '%')
+        #self.nome_jogador_entry.insert(END, '%')
         nome = self.nome_jogador_entry.get()
         
-        lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
-                                    WHERE nomeJogador LIKE '%s' ORDER BY nomeJogador ASC;""" % nome)
+        #self.posicao_entry.insert(0, '%')
+        #self.posicao_entry.insert(END, '%')
+        posicaoJogador = self.posicao_entry.get()
+        
+        
+        #self.time_entry.insert(0, '%')
+        #self.time_entry.insert(END, '%')
+        timeJogador = self.time_entry.get()
+        
+        #lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
+        #                            WHERE nomeJogador LIKE '%s' ORDER BY nomeJogador ASC;""" % nome)
 
+        lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
+                                    WHERE nomeJogador LIKE ? AND posicaoJogador LIKE ? AND timeJogador LIKE ? ORDER BY nomeJogador ASC;""", ("%"+nome+"%","%"+posicaoJogador+"%","%"+timeJogador+"%"))
+        
+        
         buscanomeCli = self.cursor.fetchall()
         for i in buscanomeCli:
             self.listaCli.insert("", END, values=i)
@@ -135,10 +150,19 @@ class FuncoesTela():
         self.limpa_tela()
 
 
-    def UploadAction(event=None):
-        filename = filedialog.askopenfilename()
-        print('Selected:', filename)
-
+    #def images_base64(self):
+    #    self.bt_cadastrar_base64 = 'CODIGO_BASE64'
+        
+        
+    def convert_to_base64(self, image_file):
+        with open(image_file, "rb") as img_file:
+            my_string_base64 = base64.b64encode(img_file.read())
+        return my_string_base64
+    
+    
+    #def uploadImg(self):
+        #self.imagemJogador = filedialog.askopenfilename()
+        #print(self.convert_to_base64(self.imagemJogador))
 
 
     def OnDoubleClick(self, event):
@@ -185,6 +209,10 @@ class Application(FuncoesTela, Relatorios):
         
         #INSTANCIANDO A JANELA NOVAMENTE DENTRO DA CLASSE, ASSOCIANDO AO ATRIBUTO.
         self.janela = janela
+        
+        #self.images_base64()
+        
+        
         #CHAMANDO A FUNÇÃO DE CONFIGURAÇÃO DA TELA.
         self.tela()
         self.frames_da_tela()
@@ -292,23 +320,50 @@ class Application(FuncoesTela, Relatorios):
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' ,command=self.limpa_tela)
-        self.bt_limpar.place(relx=0.24, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_limpar.place(relx=0.25, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON BUSCAR
         self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.buscaCliente)
-        self.bt_buscar.place(relx=0.36, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_buscar.place(relx=0.38, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        self.imagemJogador = ""
+        self.bt_uploadPhoto = Button(self.frame_1, text="Upload Photo ", font= ("verdana",10,'bold'), border=2, bg="#aaf111", activebackground='#108ecb' ,activeforeground='white' , command=self.uploadImg)
+        self.bt_uploadPhoto.place(relx=0.50, rely=0.60, relwidth=0.1, relheight=0.15)
+        
+
+
+
+        
+        #self.bt_cadastrar = PhotoImage(data=base64.b64decode(self.bt_cadastrar_base64))
+        
+        
+        
+        #CRIAÇÃO DO IMG_NOVO
+        #self.imgNovo = PhotoImage(file="new_button.jpg")
+        
+        #O SUBSAMPLE IRÁ DAR AS COORDENADAS DESEJADAS PARA O TAMANHO DO BOTÃO
+        #self.imgNovo = self.imgNovo.subsample(-6,-6)
+        #self.style = ttk.Style()
+        #self.style.configure("BW.TButton", relwidth=1, relheight=1, foreground= "yellow", borderwidth=0, bordercolor = "blue", background="#27c7af", image=self.imgNovo)
+        
+        
         
         ## CRIAÇÃO BUTTON LIMPAR
+        #self.bt_cadastrar = ttk.Button(self.frame_1, style="BW.TButton", command=self.add_cliente)
         self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.add_cliente)
-        self.bt_cadastrar.place(relx=0.50, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_cadastrar.place(relx=0.51, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        #self.bt_cadastrar.config(image = self.imgNovo)
+        
+        
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.altera_cliente)
-        self.bt_alterar.place(relx=0.63, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_alterar.place(relx=0.64, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
         self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.deleta_cliente)
-        self.bt_apagar.place(relx=0.78, rely=0.08, relwidth=0.1, relheight=0.15)
+        self.bt_apagar.place(relx=0.77, rely=0.08, relwidth=0.1, relheight=0.15)
         
 
 
