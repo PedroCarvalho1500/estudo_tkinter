@@ -114,6 +114,25 @@ class FuncoesTela():
             self.listaCli.insert("", END, values=i)
             
         self.desconecta_bd()
+        
+
+
+    def buscaCliente(self):
+        self.conecta_bd()
+        self.listaCli.delete(*self.listaCli.get_children())
+        
+        self.nome_jogador_entry.insert(0, '%')
+        self.nome_jogador_entry.insert(END, '%')
+        nome = self.nome_jogador_entry.get()
+        
+        lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
+                                    WHERE nomeJogador LIKE '%s' ORDER BY nomeJogador ASC;""" % nome)
+
+        buscanomeCli = self.cursor.fetchall()
+        for i in buscanomeCli:
+            self.listaCli.insert("", END, values=i)
+            
+        self.limpa_tela()
 
 
     def UploadAction(event=None):
@@ -222,8 +241,6 @@ class Application(FuncoesTela, Relatorios):
         # O PLACE PERMITE INSERIR OS ELEMENTOS NOS LOCAIS ESPECÍFICOS.
 
     def widgets_frame1(self):
-        
-        
         ## Criação da label e entrada do código
         #self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
         #self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
@@ -268,25 +285,29 @@ class Application(FuncoesTela, Relatorios):
         self.valor_entry = Entry(self.frame_1, fg='#2F4F4F')
         self.valor_entry.place(relx=0.85, rely=0.47, relwidth=0.14, relheight=0.09)
         
+        #ESTILIZAÇÃO DO BOTÃO LIMPAR
+        self.canvas_bt = Canvas(self.frame_1, bd=0, bg="black", highlightbackground="gold", highlightthickness=5)
+        self.canvas_bt.place(relx=0.20, rely=0.06, relwidth=0.721, relheight=0.19)
+        
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.limpa_tela)
+        self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' ,command=self.limpa_tela)
         self.bt_limpar.place(relx=0.24, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON BUSCAR
-        self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'))
+        self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.buscaCliente)
         self.bt_buscar.place(relx=0.36, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.add_cliente)
+        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.add_cliente)
         self.bt_cadastrar.place(relx=0.50, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.altera_cliente)
+        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.altera_cliente)
         self.bt_alterar.place(relx=0.63, rely=0.08, relwidth=0.1, relheight=0.15)
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'), command=self.deleta_cliente)
+        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.deleta_cliente)
         self.bt_apagar.place(relx=0.78, rely=0.08, relwidth=0.1, relheight=0.15)
         
 
