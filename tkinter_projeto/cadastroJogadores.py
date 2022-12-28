@@ -1,5 +1,7 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import tix
+from tkinter.constants import *
 from PIL import Image, ImageTk
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A4
@@ -13,10 +15,13 @@ from tkinter.filedialog import askopenfile
 import base64
 
 
-
+#GERANDO UM EXECUTÁVEL
+#pyinstaller --onefile --noconsole --windowed --icon='soccer.png' cadastroJogadores.py
+#--hidden-import='PIL._tkinter_finder' cadastroJogadores.py
 
 #VARIÁVEL PARA A JANELA
-janela = Tk()
+janela = tix.Tk()
+
 
 class Relatorios():
     def printJogador(self):
@@ -106,6 +111,11 @@ class FuncoesTela():
         self.select_lista()
         self.limpa_tela()
         
+        
+        self.imagebase64_to_png()
+        
+        
+        
     def select_lista(self):
         self.listaCli.delete(*self.listaCli.get_children())
         self.conecta_bd()
@@ -160,8 +170,9 @@ class FuncoesTela():
         return my_string_base64
     
     
-    #def uploadImg(self):
-        #self.imagemJogador = filedialog.askopenfilename()
+    def uploadImg(self):
+        self.imagemJogador = filedialog.askopenfilename()
+        self.imagemJogador_base64 = self.convert_to_base64(self.imagemJogador)
         #print(self.convert_to_base64(self.imagemJogador))
 
 
@@ -202,6 +213,11 @@ class FuncoesTela():
         self.desconecta_bd()
         self.select_lista()
         self.limpa_tela()
+
+    def imagebase64_to_png(self):
+        image_64_decode = base64.b64decode(self.imagemJogador_base64) 
+        image_result = open('IMAGEM_BASE64_CONVERTED.png', 'wb')
+        image_result.write(image_64_decode)
 
 
 class Application(FuncoesTela, Relatorios):
@@ -252,8 +268,11 @@ class Application(FuncoesTela, Relatorios):
         self.janela.minsize(width=900, height=900)
 
     def frames_da_tela(self):
-        image = Image.open("soccer.png")
-        render = ImageTk.PhotoImage(image)
+        self.image = Image.open("soccer.png")
+        self.render = ImageTk.PhotoImage(self.image)
+        
+        self.fotoJogador = Image.open("interrogacao.png")
+        self.renderFotoJogador = ImageTk.PhotoImage(self.fotoJogador)
         
         self.frame_1 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7af')
         self.frame_1.place(relx= 0.04, rely=0.041, relwidth= 0.91, relheight=0.46)
@@ -261,14 +280,36 @@ class Application(FuncoesTela, Relatorios):
         self.frame_2 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7ad', highlightthickness=3)
         self.frame_2.place(relx= 0.04, rely=0.52, relwidth= 0.91, relheight=0.46)
         
-        img = Label(self.frame_1, image=render, bg='#c0c0c0')
-        img.image = render
-        img.place(x=-160, y=-10)
+        
+        self.imagemJogador_base64 = ''
+        #b1 = Button(self.janela, image=imagem_jogador)
+        #b1.pack(pady=10)
+        #b1.image = imagem_jogador
+        
+        
         # PLACE PACK GRID 
         # O PACK NÃO DEIXA-NOS COLOCAR OBJETOS EM POSIÇÕES ESPECÍFICAS
         # O PLACE PERMITE INSERIR OS ELEMENTOS NOS LOCAIS ESPECÍFICOS.
 
     def widgets_frame1(self):
+
+        #CRIAÇÃO DE ABAS NO TKINTER
+        #IMPLEMENTAR POSTERIORMENTE AS ABAS DE CADASTRO DE JOGADORES, TIMES, CAMPEONATOS/LIGAS E SELEÇÕES
+        self.abas = ttk.Notebook(self.frame_1)
+        self.aba_jogadores = Frame(self.abas)
+        self.aba_times = Frame(self.abas)
+        
+        self.aba_jogadores.configure(background="#c0c0c0")
+        self.aba_times.configure(background="#696969")
+        self.abas.add(self.aba_jogadores, text="Cadastro de Jogadores")
+        self.abas.add(self.aba_times, text="Cadastro de Times")
+        self.abas.place(relx=0, rely=0, relwidth=0.98, relheight=0.98)
+        
+        
+        
+        self.img = Label(self.aba_jogadores, image=self.render, bg='#c0c0c0')
+        self.img.image = self.render
+        self.img.place(x=-170, y=-30)
         ## Criação da label e entrada do código
         #self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
         #self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
@@ -276,58 +317,70 @@ class Application(FuncoesTela, Relatorios):
         #self.codigo_entry = Entry(self.frame_1, fg='#2F4F4F')
         #self.codigo_entry.place(relx=0.09, rely=0.62, relwidth=0.09, relheight=0.09)
         
+        self.foto_jogador = Label(self.aba_jogadores, image=self.renderFotoJogador)
+        self.foto_jogador.image = self.renderFotoJogador
+        self.foto_jogador.place(x=270, y=220, width=150, height=170)
         
-        self.lb_nomejogador = Label(self.frame_1, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
+        
+        self.lb_nomejogador = Label(self.aba_jogadores, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
         self.lb_nomejogador.place(relx=0.21, rely=0.39, relwidth=0.22, relheight=0.11)
         
         ##ENTRY = INPUT DO TKINTER
-        self.nome_jogador_entry = Entry(self.frame_1, fg='#2F4F4F')
+        self.nome_jogador_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
         self.nome_jogador_entry.place(relx=0.21, rely=0.47, relwidth=0.22, relheight=0.09)
         
         
-        #button_upload_photo = Button(self.frame_1, text='Carregar Foto', command=self.UploadAction, bg='#c0c0c0')
+        #button_upload_photo = Button(self.aba_jogadores, text='Carregar Foto', command=self.UploadAction, bg='#c0c0c0')
         #button_upload_photo.place(relx=0.47, rely=0.60, relwidth=0.14, relheight=0.11)
         
         #image = Image.open()
         #render = ImageTk.PhotoImage(image)
         
-        #img = Label(self.frame_1, image=render, bg='#c0c0c0')
+        #img = Label(self.aba_jogadores, image=render, bg='#c0c0c0')
         #img.image = render
         #img.place(x=-160, y=-10)
         
-        self.lb_posição = Label(self.frame_1, text = "Posição", bg='#c0c0c0', fg='#483D8B')
+        self.lb_posição = Label(self.aba_jogadores, text = "Posição", bg='#c0c0c0', fg='#483D8B')
         self.lb_posição.place(relx=0.47, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.posicao_entry = Entry(self.frame_1, fg='#2F4F4F')
+        self.posicao_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
         self.posicao_entry.place(relx=0.47, rely=0.47, relwidth=0.14, relheight=0.09)
         
-        self.lb_time = Label(self.frame_1, text = "Time", bg='#c0c0c0', fg='#483D8B')
+        self.lb_time = Label(self.aba_jogadores, text = "Time", bg='#c0c0c0', fg='#483D8B')
         self.lb_time.place(relx=0.66, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.time_entry = Entry(self.frame_1, fg='#2F4F4F')
+        self.time_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
         self.time_entry.place(relx=0.66, rely=0.47, relwidth=0.14, relheight=0.09)
         
-        self.lb_valor = Label(self.frame_1, text = "Valor (Euros)", bg='#c0c0c0', fg='#483D8B')
+        self.lb_valor = Label(self.aba_jogadores, text = "Valor (Euros)", bg='#c0c0c0', fg='#483D8B')
         self.lb_valor.place(relx=0.85, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.valor_entry = Entry(self.frame_1, fg='#2F4F4F')
+        self.valor_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
         self.valor_entry.place(relx=0.85, rely=0.47, relwidth=0.14, relheight=0.09)
         
         #ESTILIZAÇÃO DO BOTÃO LIMPAR
-        self.canvas_bt = Canvas(self.frame_1, bd=0, bg="black", highlightbackground="gold", highlightthickness=5)
+        self.canvas_bt = Canvas(self.aba_jogadores, bd=0, bg="black", highlightbackground="gold", highlightthickness=5)
         self.canvas_bt.place(relx=0.20, rely=0.06, relwidth=0.721, relheight=0.19)
         
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_limpar = Button(self.frame_1,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' ,command=self.limpa_tela)
+        self.bt_limpar = Button(self.aba_jogadores,text="Limpar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' ,command=self.limpa_tela)
         self.bt_limpar.place(relx=0.25, rely=0.08, relwidth=0.1, relheight=0.15)
         
+        self.balao_limpar = tix.Balloon(self.aba_jogadores)
+        self.balao_limpar.bind_widget(self.bt_limpar, balloonmsg = "Clique aqui para Limpar os valores preenchidos nos campos")
+        
+        
         ## CRIAÇÃO BUTTON BUSCAR
-        self.bt_buscar = Button(self.frame_1,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.buscaCliente)
+        self.bt_buscar = Button(self.aba_jogadores,text="Buscar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.buscaCliente)
         self.bt_buscar.place(relx=0.38, rely=0.08, relwidth=0.1, relheight=0.15)
         
-        self.imagemJogador = ""
-        self.bt_uploadPhoto = Button(self.frame_1, text="Upload Photo ", font= ("verdana",10,'bold'), border=2, bg="#aaf111", activebackground='#108ecb' ,activeforeground='white' , command=self.uploadImg)
+        self.balao_buscar = tix.Balloon(self.aba_jogadores)
+        self.balao_buscar.bind_widget(self.bt_buscar, balloonmsg = "Digite nos campos os valores do jogador que deseja buscar")
+        
+        
+    
+        self.bt_uploadPhoto = Button(self.aba_jogadores, text="Upload Photo ", font= ("verdana",10,'bold'), border=2, bg="#aaf111", activebackground='#108ecb' ,activeforeground='white' , command=self.uploadImg)
         self.bt_uploadPhoto.place(relx=0.50, rely=0.60, relwidth=0.1, relheight=0.15)
         
 
@@ -350,21 +403,39 @@ class Application(FuncoesTela, Relatorios):
         
         ## CRIAÇÃO BUTTON LIMPAR
         #self.bt_cadastrar = ttk.Button(self.frame_1, style="BW.TButton", command=self.add_cliente)
-        self.bt_cadastrar = Button(self.frame_1,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.add_cliente)
+        self.bt_cadastrar = Button(self.aba_jogadores,text="Cadastrar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.add_cliente)
         self.bt_cadastrar.place(relx=0.51, rely=0.08, relwidth=0.1, relheight=0.15)
         
+        self.balao_cadastrar = tix.Balloon(self.aba_jogadores)
+        self.balao_cadastrar.bind_widget(self.bt_cadastrar, balloonmsg = "Clique aqui para cadastrar um novo jogador com os valores preenchidos nos campos")
         #self.bt_cadastrar.config(image = self.imgNovo)
         
         
         
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_alterar = Button(self.frame_1,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.altera_cliente)
+        self.bt_alterar = Button(self.aba_jogadores,text="Alterar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.altera_cliente)
         self.bt_alterar.place(relx=0.64, rely=0.08, relwidth=0.1, relheight=0.15)
         
+        self.balao_alterar = tix.Balloon(self.aba_jogadores)
+        self.balao_alterar.bind_widget(self.bt_alterar, balloonmsg = "Clique aqui para alterar o jogador com os novos valores preenchidos nos campos")
+        
+        
         ## CRIAÇÃO BUTTON LIMPAR
-        self.bt_apagar = Button(self.frame_1,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.deleta_cliente)
+        self.bt_apagar = Button(self.aba_jogadores,text="Apagar", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.deleta_cliente)
         self.bt_apagar.place(relx=0.77, rely=0.08, relwidth=0.1, relheight=0.15)
         
+        self.balao_apagar = tix.Balloon(self.aba_jogadores)
+        self.balao_apagar.bind_widget(self.bt_apagar, balloonmsg = "Clique aqui para deletar o jogador selecionado")
+
+
+        #### DROPDROWN BUTTON ####
+        #self.Tipvar = StringVar(self.aba_times)
+        #self.TipV = ("Masculino", "Feminino")
+        #self.Tipvar.set("Masculino")
+        #self.popupMenu = OptionMenu(self.aba_times, self.Tipvar, *self.TipV)
+        #self.popupMenu.place(relx=0.2, rely=0.2, relwidth=0.15, relheight=0.15)
+        #self.sexo = self.Tipvar.get()
+        #print(self.sexo)
 
 
     def lista_dentro_do_frame2(self):
