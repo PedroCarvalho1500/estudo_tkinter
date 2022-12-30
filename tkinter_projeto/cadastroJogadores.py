@@ -25,16 +25,31 @@ import os
 #VARIÁVEL PARA A JANELA
 janela = tix.Tk()
 
-#class GradientFrama(Canvas):
-#    def __init__(self, parent, color1= "#C6CCFF", color2 = "gray35", **kwargs):
-#        Canvas.__init__(self, parent, **kwargs)
-#        self._color1 = color1
-#        self._color2 = color2
-#        self.bind("<Configure>", self._draw_gradient)
-#        
-#    def _draw_gradient(self, event=None):
-#        self.delete
-        
+class GradientFrame(Canvas):
+    def __init__(self, parent, color1="#C6CCFF", color2="gray35", **kwargs):
+        Canvas.__init__(self, parent, **kwargs)
+        self._color1 = color1
+        self._color2 = color2
+        self.bind("<Configure>", self._draw_gradient)
+    def _draw_gradient(self, event=None):
+        '''Desenhando o gradiente'''
+        self.delete("gradient")
+        width = self.winfo_width()
+        height = self.winfo_height()
+        limit = width
+        (r1,g1,b1) = self.winfo_rgb(self._color1)
+        (r2,g2,b2) = self.winfo_rgb(self._color2)
+        r_ratio = float(r2-r1) / limit
+        g_ratio = float(g2-g1) / limit
+        b_ratio = float(b2-b1) / limit
+
+        for i in range(limit):
+            nr = int(r1 + (r_ratio * i))
+            ng = int(g1 + (g_ratio * i))
+            nb = int(b1 + (b_ratio * i))
+            color = "#%4.4x%4.4x%4.4x" % (nr,ng,nb)
+            self.create_line(i,0,i,height, tags=("gradient",), fill=color)
+        self.lower("gradient")
 
 class Relatorios():
     def printJogador(self):
@@ -83,11 +98,15 @@ class FuncoesTela():
             self.imagebase64_to_png()  
             self.fotoJogador = Image.open("IMAGEM_BASE64_CONVERTED.png")
             self.foto_jogador.configure(width=380)
+            
             self.renderFotoJogador = ImageTk.PhotoImage(self.fotoJogador)
 
         self.foto_jogador = Label(self.aba_jogadores, image=self.renderFotoJogador, bg='#c0c0c0', highlightbackground='#27c7af')
         self.foto_jogador.image = self.renderFotoJogador
-        self.foto_jogador.place(x=270, y=220, width=145, height=160)
+        self.foto_jogador.destroy
+        self.foto_jogador.place(relx=0.26, rely=0.58, relheight=0.40, relwidth=0.14)
+        #self.foto_jogador.place(x=270, y=220, width=145, height=160)
+        #self.foto_jogador.place(relx=0.43, rely=0.44, relheight=0.4, relwidth=0.4)
     
     def variaveis_tela_entries(self):
         self.nome_jogador = self.nome_jogador_entry.get()
@@ -282,7 +301,7 @@ class FuncoesTela():
         image_result.write(image_64_decode)
 
 
-class Application(FuncoesTela, Relatorios):
+class Application(FuncoesTela, Relatorios, GradientFrame):
     def __init__(self):
         
         #INSTANCIANDO A JANELA NOVAMENTE DENTRO DA CLASSE, ASSOCIANDO AO ATRIBUTO.
@@ -358,6 +377,7 @@ class Application(FuncoesTela, Relatorios):
         #CRIAÇÃO DE ABAS NO TKINTER
         #IMPLEMENTAR POSTERIORMENTE AS ABAS DE CADASTRO DE JOGADORES, TIMES, CAMPEONATOS/LIGAS E SELEÇÕES
         self.abas = ttk.Notebook(self.frame_1)
+        #self.aba_jogadores = GradientFrame(self.abas)
         self.aba_jogadores = Frame(self.abas)
         self.aba_times = Frame(self.abas)
         
@@ -369,9 +389,14 @@ class Application(FuncoesTela, Relatorios):
         
         
         
-        self.img = Label(self.aba_jogadores, image=self.render, bg='#c0c0c0')
+        self.img = Label(self.aba_jogadores, image=self.render, background="#c0c0c0")
         self.img.image = self.render
-        self.img.place(x=-170, y=-30)
+        self.img.place(relx=0.01, rely=0.01, relheight=0.98, relwidth=0.22)
+        
+        
+        
+        
+        #self.img.place(x=-170, y=-30)
         ## Criação da label e entrada do código
         #self.lb_codigo = Label(self.frame_1, text = "Código", bg='#c0c0c0', fg='#483D8B')
         #self.lb_codigo.place(relx=0.085, rely=0.55, relwidth=0.10, relheight=0.11)
@@ -381,7 +406,8 @@ class Application(FuncoesTela, Relatorios):
         
         self.foto_jogador = Label(self.aba_jogadores, image=self.renderFotoJogador)
         self.foto_jogador.image = self.renderFotoJogador
-        self.foto_jogador.place(x=270, y=220, width=150, height=170)
+        #self.foto_jogador.place(x=270, y=220, width=150, height=170)
+        self.foto_jogador.place(relx=0.26, rely=0.58, relheight=0.40, relwidth=0.14)
         
         
         self.lb_nomejogador = Label(self.aba_jogadores, text = "Nome do Jogador", bg='#c0c0c0', fg='#483D8B')
