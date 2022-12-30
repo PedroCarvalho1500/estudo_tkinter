@@ -12,7 +12,10 @@ import webbrowser
 import sqlite3
 from tkinter import filedialog 
 from tkinter.filedialog import askopenfile
+from tkinter import messagebox
 import base64
+import os
+
 
 
 #GERANDO UM EXECUTÁVEL
@@ -22,6 +25,16 @@ import base64
 #VARIÁVEL PARA A JANELA
 janela = tix.Tk()
 
+#class GradientFrama(Canvas):
+#    def __init__(self, parent, color1= "#C6CCFF", color2 = "gray35", **kwargs):
+#        Canvas.__init__(self, parent, **kwargs)
+#        self._color1 = color1
+#        self._color2 = color2
+#        self.bind("<Configure>", self._draw_gradient)
+#        
+#    def _draw_gradient(self, event=None):
+#        self.delete
+        
 
 class Relatorios():
     def printJogador(self):
@@ -60,6 +73,22 @@ class Relatorios():
         
 
 class FuncoesTela():
+    def alterar_foto_jogador(self, default=1):
+        if(default == 1):
+            self.fotoJogador = Image.open("interrogacao.webp")
+            self.foto_jogador.configure(width=380)
+            self.renderFotoJogador = ImageTk.PhotoImage(self.fotoJogador)
+        
+        else:  
+            self.imagebase64_to_png()  
+            self.fotoJogador = Image.open("IMAGEM_BASE64_CONVERTED.png")
+            self.foto_jogador.configure(width=380)
+            self.renderFotoJogador = ImageTk.PhotoImage(self.fotoJogador)
+
+        self.foto_jogador = Label(self.aba_jogadores, image=self.renderFotoJogador, bg='#c0c0c0', highlightbackground='#27c7af')
+        self.foto_jogador.image = self.renderFotoJogador
+        self.foto_jogador.place(x=270, y=220, width=145, height=160)
+    
     def variaveis_tela_entries(self):
         self.nome_jogador = self.nome_jogador_entry.get()
         self.posicao_jogador = self.posicao_entry.get()
@@ -72,6 +101,8 @@ class FuncoesTela():
         self.posicao_entry.delete(0, END)
         self.time_entry.delete(0, END)
         self.valor_entry.delete(0, END)
+        self.alterar_foto_jogador()
+        
 
     def conecta_bd(self):
         self.conn = sqlite3.connect("jogadores.bd")
@@ -90,7 +121,8 @@ class FuncoesTela():
                         nomeJogador CHAR(40) NOT NULL,
                         posicaojogador CHAR(40) NOT NULL,
                         timeJogador CHAR(40),
-                        valorJogador  INT(20)  NOT NULL
+                        valorJogador  INT(20)  NOT NULL,
+                        fotoJogador  CHAR(10000)
                             )""")
         
         self.conn.commit()
@@ -100,19 +132,23 @@ class FuncoesTela():
     def add_cliente(self):
         self.variaveis_tela_entries()
         
-        self.conecta_bd()
+        if(self.nome_jogador_entry.get() == ""):
+            msg = "É necessário preencher o campo Nome do Jogador!!!"
+            messagebox.showinfo("Cadastro de Jogadores - Aviso!!!", msg)
         
-        self.cursor.execute(""" INSERT INTO jogadores (nomeJogador, posicaojogador, timeJogador, valorJogador) 
-                            VALUES(?,?,?,?)
-                            """, (self.nome_jogador, self.posicao_jogador, self.time, self.valor))
-        
-        self.conn.commit()
-        self.desconecta_bd()
-        self.select_lista()
-        self.limpa_tela()
-        
-        
-        self.imagebase64_to_png()
+        else:
+            self.conecta_bd()
+            
+            self.cursor.execute(""" INSERT INTO jogadores (nomeJogador, posicaojogador, timeJogador, valorJogador, fotoJogador) 
+                                VALUES(?,?,?,?,?)
+                                """, (self.nome_jogador, self.posicao_jogador, self.time, self.valor, (self.convert_to_base64(self.imagemJogador))))
+            
+            self.conn.commit()
+            self.desconecta_bd()
+            self.select_lista()
+            self.limpa_tela()
+            
+            #self.imagebase64_to_png()
         
         
         
@@ -124,7 +160,13 @@ class FuncoesTela():
         
         for i in lista:
             self.listaCli.insert("", END, values=i)
-            
+          
+        
+        #self.imagemJogador_base64 = str(fotoDoJogadorBuscaBase64)
+        #self.imagebase64_to_png()
+        
+        #self.fotoJogador = Image.open("")
+        
         self.desconecta_bd()
         
 
@@ -173,6 +215,7 @@ class FuncoesTela():
     def uploadImg(self):
         self.imagemJogador = filedialog.askopenfilename()
         self.imagemJogador_base64 = self.convert_to_base64(self.imagemJogador)
+        self.alterar_foto_jogador(0)
         #print(self.convert_to_base64(self.imagemJogador))
 
 
@@ -188,6 +231,25 @@ class FuncoesTela():
             self.posicao_entry.insert(END, col3)
             self.time_entry.insert(END,col4)
             self.valor_entry.insert(END, col5)
+        
+        self.conecta_bd()
+        fotoDoJogadorBuscaBase64 = self.cursor.execute("""SELECT fotoJogador FROM jogadores WHERE codigo == ?;""",[self.codigo_do_jogador])
+        
+        for i in fotoDoJogadorBuscaBase64:
+            for j in i:
+                self.imagemJogador_base64 = j
+            
+        self.alterar_foto_jogador(0)
+            #self.imagemJogador_base64 = str(i)
+            #print(self.imagemJogador_base64)
+
+
+        #print("fotoDoJogadorBuscada "+str(fotoDoJogadorBuscaBase64))
+        #self.imagemJogador_base64 = fotoDoJogadorBuscaBase64
+        #self.imagebase64_to_png()
+        #self.fotoJogador = Image.open("IMAGEM_BASE64_CONVERTED.png")
+        
+        self.desconecta_bd()
             
     def deleta_cliente(self):
         self.variaveis_tela_entries()
@@ -215,7 +277,7 @@ class FuncoesTela():
         self.limpa_tela()
 
     def imagebase64_to_png(self):
-        image_64_decode = base64.b64decode(self.imagemJogador_base64) 
+        image_64_decode = base64.b64decode(self.imagemJogador_base64)
         image_result = open('IMAGEM_BASE64_CONVERTED.png', 'wb')
         image_result.write(image_64_decode)
 
@@ -271,7 +333,7 @@ class Application(FuncoesTela, Relatorios):
         self.image = Image.open("soccer.png")
         self.render = ImageTk.PhotoImage(self.image)
         
-        self.fotoJogador = Image.open("interrogacao.png")
+        self.fotoJogador = Image.open("interrogacao.webp")
         self.renderFotoJogador = ImageTk.PhotoImage(self.fotoJogador)
         
         self.frame_1 = Frame(self.janela, bg='#c0c0c0', highlightbackground='#27c7af')
@@ -384,9 +446,7 @@ class Application(FuncoesTela, Relatorios):
         self.bt_uploadPhoto.place(relx=0.50, rely=0.60, relwidth=0.1, relheight=0.15)
         
 
-
-
-        
+ 
         #self.bt_cadastrar = PhotoImage(data=base64.b64decode(self.bt_cadastrar_base64))
         
         
@@ -428,8 +488,15 @@ class Application(FuncoesTela, Relatorios):
         self.balao_apagar.bind_widget(self.bt_apagar, balloonmsg = "Clique aqui para deletar o jogador selecionado")
 
 
+
+        #self.bt_abrirJanela2 = Button(self.aba_jogadores,text="Abrir Janela 2", border=2, bg="#aaf111", font=('verdana', 10, 'bold'),activebackground='#108ecb' ,activeforeground='white' , command=self.janela2)
+        #self.bt_abrirJanela2.place(relx=0.90, rely=0.08, relwidth=0.1, relheight=0.15)
+        
+        
+        
+        
         #### DROPDROWN BUTTON ####
-        #self.Tipvar = StringVar(self.aba_times)
+        #self.Tipvar = StringVar()
         #self.TipV = ("Masculino", "Feminino")
         #self.Tipvar.set("Masculino")
         #self.popupMenu = OptionMenu(self.aba_times, self.Tipvar, *self.TipV)
@@ -492,6 +559,22 @@ class Application(FuncoesTela, Relatorios):
         filemenu2.add_command(label="Versão do Sistema", command=lambda: print("VERSÃO v0.1.0"))
         
         filemenu3.add_command(label="Ficha do Jogador", command=self.geraRelatorioJogador)
+
+    def janela2(self):
+        self.janela2 = Toplevel()
+        self.janela2.title("Janela 2")
+        self.janela2.configure(background='green')
+        self.janela2.geometry("400x200")
+        self.janela2.resizable(False, False)
+        
+        # DE ONDE A JANELA VEIO, ISTO É: A JANELA 2 VEM DA JANELA 1
+        self.janela2.transient(self.janela)
+        
+        # A JANELA IRÁ FICAR A FRENTE DA OUTRA
+        self.janela2.focus_force()
+        
+        #IMPEDIR QUE QUALQUER COISA SEJA DIGITADA NA OUTRA JANELA
+        self.janela2.grab_set()
 
 Application()
 #LOOPING PARA A JANELA APARECER
