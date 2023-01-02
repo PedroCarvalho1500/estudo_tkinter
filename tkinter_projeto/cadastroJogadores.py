@@ -1,3 +1,4 @@
+import re
 from tkinter import *
 from tkinter import ttk
 from tkinter import tix
@@ -24,6 +25,35 @@ import os
 
 #VARIÁVEL PARA A JANELA
 janela = tix.Tk()
+
+
+
+class Validadores():
+    
+    def validate_entry_valor_jogador(self,text):
+        if text == "": 
+            return True
+        try:
+            value = int(text)
+        except ValueError: 
+            return False
+        return 0 <= value <= 1000000000
+    
+    def validate_nome_jogador(self,text):
+        pattern = r'^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$'
+        if re.fullmatch(pattern, text) is None:
+            return False
+        
+        return True
+    
+    
+    def on_invalid(self):
+        """
+        Show the error message if the data is not valid
+        :return:
+        """
+        self.show_message('Please enter a valid Name', 'red')
+
 
 class GradientFrame(Canvas):
     def __init__(self, parent, color1="#C6CCFF", color2="gray35", **kwargs):
@@ -301,7 +331,7 @@ class FuncoesTela():
         image_result.write(image_64_decode)
 
 
-class Application(FuncoesTela, Relatorios, GradientFrame):
+class Application(FuncoesTela, Relatorios, GradientFrame, Validadores):
     def __init__(self):
         
         #INSTANCIANDO A JANELA NOVAMENTE DENTRO DA CLASSE, ASSOCIANDO AO ATRIBUTO.
@@ -309,7 +339,7 @@ class Application(FuncoesTela, Relatorios, GradientFrame):
         
         #self.images_base64()
         
-        
+        self.validaEntradas()
         #CHAMANDO A FUNÇÃO DE CONFIGURAÇÃO DA TELA.
         self.tela()
         self.frames_da_tela()
@@ -318,6 +348,7 @@ class Application(FuncoesTela, Relatorios, GradientFrame):
         self.montaTabelas()
         self.select_lista()
         self.Menus()
+            
         
         janela.wait_window()
         
@@ -414,7 +445,7 @@ class Application(FuncoesTela, Relatorios, GradientFrame):
         self.lb_nomejogador.place(relx=0.21, rely=0.39, relwidth=0.22, relheight=0.11)
         
         ##ENTRY = INPUT DO TKINTER
-        self.nome_jogador_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
+        self.nome_jogador_entry = Entry(self.aba_jogadores, fg='#2F4F4F', validate="key", validatecommand=self.valida_nome)
         self.nome_jogador_entry.place(relx=0.21, rely=0.47, relwidth=0.22, relheight=0.09)
         
         
@@ -443,7 +474,7 @@ class Application(FuncoesTela, Relatorios, GradientFrame):
         self.lb_valor = Label(self.aba_jogadores, text = "Valor (Euros)", bg='#c0c0c0', fg='#483D8B')
         self.lb_valor.place(relx=0.85, rely=0.39, relwidth=0.14, relheight=0.11)
 
-        self.valor_entry = Entry(self.aba_jogadores, fg='#2F4F4F')
+        self.valor_entry = Entry(self.aba_jogadores, fg='#2F4F4F', validate="key", validatecommand=self.vcmd2)
         self.valor_entry.place(relx=0.85, rely=0.47, relwidth=0.14, relheight=0.09)
         
         #ESTILIZAÇÃO DO BOTÃO LIMPAR
@@ -601,6 +632,12 @@ class Application(FuncoesTela, Relatorios, GradientFrame):
         
         #IMPEDIR QUE QUALQUER COISA SEJA DIGITADA NA OUTRA JANELA
         self.janela2.grab_set()
+
+
+
+    def validaEntradas(self):
+        self.vcmd2 = (self.janela.register(self.validate_entry_valor_jogador), "%P")
+        self.valida_nome = (self.janela.register(self.validate_nome_jogador), "%P")
 
 Application()
 #LOOPING PARA A JANELA APARECER
