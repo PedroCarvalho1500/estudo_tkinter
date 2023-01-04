@@ -15,6 +15,7 @@ from tkinter import filedialog
 from tkinter.filedialog import askopenfile
 from tkinter import messagebox
 import base64
+from tkcalendar import Calendar
 import os
 
 
@@ -40,9 +41,10 @@ class Validadores():
         return 0 <= value <= 1000000000
     
     def validate_nome_jogador(self,text):
-        pattern = r'^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$'
-        if re.fullmatch(pattern, text) is None:
-            return False
+        #pattern = r'^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$'
+        pattern = ""
+        #if re.fullmatch(pattern, text) is None:
+        #    return False
         
         return True
     
@@ -241,7 +243,7 @@ class FuncoesTela():
         #                            WHERE nomeJogador LIKE '%s' ORDER BY nomeJogador ASC;""" % nome)
 
         lista = self.cursor.execute("""SELECT codigo,nomeJogador, posicaojogador, timeJogador, valorJogador FROM jogadores
-                                    WHERE nomeJogador LIKE ? AND posicaoJogador LIKE ? AND timeJogador LIKE ? ORDER BY nomeJogador ASC;""", ("%"+nome+"%","%"+posicaoJogador+"%","%"+timeJogador+"%"))
+                                    WHERE nomeJogador LIKE ? AND posicaoJogador LIKE ? AND timeJogador LIKE ? ORDER BY codigo ASC;""", ("%"+nome+"%","%"+posicaoJogador+"%","%"+timeJogador+"%"))
         
         
         buscanomeCli = self.cursor.fetchall()
@@ -329,6 +331,19 @@ class FuncoesTela():
         image_64_decode = base64.b64decode(self.imagemJogador_base64)
         image_result = open('IMAGEM_BASE64_CONVERTED.png', 'wb')
         image_result.write(image_64_decode)
+
+    def calendario(self):
+        self.calendario1 = Calendar(self.aba_times, fg="gray75", bg="green", font=("Times", '9', 'bold'), locale="pt_br")
+        self.calendario1.place(relx=0.5, rely=0.1)
+        self.calDataInicio = Button(self.aba_times, text="Inserir Data", command=self.printDataEntry)
+        self.calDataInicio.place(relx=0.55, rely=0.54, height=25, width=120)
+        
+    def printDataEntry(self):
+        dataIni = self.calendario1.get_date()
+        self.calendario1.destroy()
+        self.entry_data.delete(0, END)
+        self.entry_data.insert(END, dataIni)
+        self.calDataInicio.destroy()
 
 
 class Application(FuncoesTela, Relatorios, GradientFrame, Validadores):
@@ -560,6 +575,13 @@ class Application(FuncoesTela, Relatorios, GradientFrame, Validadores):
         #self.popupMenu.place(relx=0.2, rely=0.2, relwidth=0.15, relheight=0.15)
         #self.sexo = self.Tipvar.get()
         #print(self.sexo)
+        
+        ### Calendário ###
+        self.bt_calendario = Button(self.aba_times, text= "Data", command=self.calendario)
+        self.bt_calendario.place(relx=0.5, rely=0.02, relheight=0.1, relwidth=0.2)
+        self.entry_data = Entry(self.aba_times, width=10)
+        self.entry_data.place(relx=0.5, rely=0.12, relheight=0.1, relwidth=0.2 )
+        
 
 
     def lista_dentro_do_frame2(self):
