@@ -3,7 +3,7 @@ from validEntry import *
 from gradiente import *
 from relatorios import *
 from funcoes_tela import *
-
+from placeHolder import *
 
 #GERANDO UM EXECUTÁVEL
 #pyinstaller --onefile --noconsole --windowed --icon='soccer.png' cadastroJogadores.py
@@ -129,7 +129,8 @@ class Application(FuncoesTela, Relatorios, GradientFrame, Validadores):
         self.lb_nomejogador.place(relx=0.21, rely=0.39, relwidth=0.22, relheight=0.11)
         
         ##ENTRY = INPUT DO TKINTER
-        self.nome_jogador_entry = Entry(self.aba_jogadores, fg='#2F4F4F', validate="key", validatecommand=self.valida_nome)
+        self.nome_jogador_entry = EntryPlaceHolder(self.aba_jogadores, "Digite o nome do Jogador")
+        #self.nome_jogador_entry = Entry(self.aba_jogadores, fg='#2F4F4F', validate="key", validatecommand=self.valida_nome)
         self.nome_jogador_entry.place(relx=0.21, rely=0.47, relwidth=0.22, relheight=0.09)
         
         
